@@ -2,6 +2,20 @@
 
 This is course to learn the fundamentals of Docker and Kubernetes. Here you can find exercises and notes made during the course.
 
+## Key notes
+
+### Docker
+
+#### Images
+
+- Images are read-only
+
+- images have a layer based architecture. Dockerfile instructions represents a layers and every time you build an image Docker
+caches the instruction result. So next time the images is rebuild it uses cache from unchanged previous layers. All instructions after
+changed step will be executed again.
+
+- When a container is run based on an image, an new extra read-write layer is added on top of the image.
+
 ## Docker commands
 
 Check this cheat sheet to get most common commands [Docker cheat sheet](https://docs.docker.com/get-started/docker_cheatsheet.pdf)
@@ -24,7 +38,7 @@ docker rmi -f <image ID>
 
 ### docker run
 
-To run a container from the terminal, use the following command:
+To create and run a container from the terminal, use the following command:
 
 ```
 docker run -it --rm -d -p 8080:80 --name web website
@@ -32,15 +46,40 @@ docker run -it --rm -d -p 8080:80 --name web website
 
 - -it: Interactively to view logs
 
-- --rm: Removes previous versions of the container
+- --rm: Removes container when it exits
 
 - -d: The container runs in the background
 
 - -p: Maps the container's port to the application's port to expose it
 
+-p is the only required part when it comes to listening on a port. Still, it is a best practice to also add EXPOSE in the Dockerfile to document this behavior.
+
 - --name: Name of the container
 
 - Finally, add the image name
+
+### docker start
+
+This can start an existent Exited container without creating a new one.
+
+```
+docker start <CONTAINER_NAME/ID>
+```
+
+-a for attach mode
+-i for interactive and allow STDIN
+
+### docker attach
+
+This will attach yourself to a detached container again.
+
+```
+docker container attach <CONTAINER_NAME>
+```
+
+### docker logs
+
+This will print the past logs of the container. You can add -f (follow mode) to show logs in real time like attached mode.
 
 ### docker images
 
@@ -69,6 +108,18 @@ is the same for all created tags based on the same image.
 docker rmi -f <IMAGE_ID>
 ```
 
+- If you want to inspect an image and get info about it.
+
+```
+docker image inspect <IMAGE_ID>
+```
+
+- If you want to remove all images including tagged images:
+
+```
+docker image prune -a
+```
+
 ### docker ps
 
 - To get running container with its size:
@@ -83,4 +134,12 @@ docker ps --size
 
 ```
 docker stats
+```
+
+### docker cp
+
+This allows you to copy files to/from running containers. The path of the container has same structure of an scp.
+
+```
+docker cp <CONTAINER_NAME>:/PATH/ <HOST_PATH>
 ```
