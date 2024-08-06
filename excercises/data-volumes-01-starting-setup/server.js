@@ -36,7 +36,10 @@ app.post('/create', async (req, res) => {
     if (exists) {
       res.redirect('/exists');
     } else {
-      await fs.rename(tempFilePath, finalFilePath);
+      // This was changed from fs.rename to the next to lines since rename func doesn't allow
+      // to rename file to a different filesystem (tempFile is in the container and finalFile is in the volume localhost).
+      await fs.copyFile(tempFilePath, finalFilePath);
+      await fs.unlink(tempFilePath);
       res.redirect('/');
     }
   });
