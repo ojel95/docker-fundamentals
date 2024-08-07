@@ -69,11 +69,7 @@ In general, Bind Mounts are a great tool during development - they're not meant 
 
 - You can use a env file, defining the file with a key-value pair per line and then call it in the docker run command with `--env-file FILE_PATH`. The path can be relative. The file content should be like this `PORT=80`.
 
-- Depending on which kind of data you're storing in your environment variables, you might not want to include the secure data directly in your Dockerfile.
-
-Instead, go for a separate environment variables file which is then only used at runtime (i.e. when you run your container with docker run).
-
-Otherwise, the values are "baked into the image" and everyone can read these values via `docker history <image>`.
+- Depending on which kind of data you're storing in your environment variables, you might not want to include the secure data directly in your Dockerfile. Instead, go for a separate environment variables file which is then only used at runtime (i.e. when you run your container with docker run). Otherwise, the values are "baked into the image" and everyone can read these values via `docker history <image>`.
 
 ### ARGument variables
 
@@ -81,6 +77,64 @@ Otherwise, the values are "baked into the image" and everyone can read these val
 - This is declared in the Dockerfile using `ARG ARG_VARIABLE_NAME=DEFAULT_VALUE`. The default value is not mandatory.
 - It can be used inside the Dockerfile to set for example ENV variables with different values in different images.
 - It can be defined in the **docker build** command adding `--build-arg ARG_VAR_NAME=VALUE`.
+
+### Networking
+
+#### Communicating with the World Wide Web (WWW)
+
+Consider this JavaScript example that tries to send a GET request to some-api.com/my-data:
+
+``` javascript
+fetch('https://some-api.com/my-data').then(...)
+```
+
+This will work out of the box, no extra configuration is required! The application, running in a
+Container, will have no problems sending this request.
+
+#### Communicating with the Host Machine
+
+Again, consider this JS example that tries to send a GET request to some web server running on the local host
+machine (i.e. outside of the Container but not the WWW).:
+
+```
+fetch('localhost:3000/demo').then(...)
+```
+
+On your local machine, this would work - inside of a Container, **it will fail**. Because localhost inside of the Container refers to the container environment, not to your local host machine which is running the Container / Docker!
+
+You just need to change this snippet like this:
+
+```
+fetch('host.docker.internal:3000/demo').then(...)
+```
+
+`host.docker.internal` is a special address / identifier which is translated to the IP address of the machine hosting the Container by Docker.
+
+#### Communicating with Other Containers
+
+You have two main options:
+
+1. Manually find out the IP of the other Container (it may change though): `docker container inspect CONTAINER_NAME`
+2. Use Docker Networks and put the communicating Containers into the same Network
+
+Option 1 is not great since you need to search for the IP on your own and it might change over time.
+
+Option 2 is perfect though. With Docker, you can create Networks via `docker network create SOME_NAME` and you can then attach multiple Containers to one and the same Network.
+
+Like this:
+
+```
+docker run --network my-network --name cont1 my-image
+docker run --network my-network --name cont2 my-other-image
+```
+
+Both *cont1* and *cont2* will be in the same Network.
+
+Now, you can simply use the Container names to let them communicate with each other - again, Docker will resolve the IP for you (see above).
+
+```
+fetch('cont1/my-data').then(...)
+```
 
 ## Docker commands
 
