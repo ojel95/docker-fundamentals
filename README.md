@@ -61,6 +61,27 @@ Don't use Bind Mounts if you just want to persist data - Named Volumes should be
 
 In general, Bind Mounts are a great tool during development - they're not meant to be used in production (since your container should run isolated from its host machine).
 
+### ENVironment variables
+
+- This can be defined in the Dockerfile using `ENV <KEY> <VALUE>`. Ex. In node apps you can use this env variable using `process.env.ENV_VAR`
+
+- It can be also defined directly in the docker run command adding the `--env KEY=VALUE` parameter.
+
+- You can use a env file, defining the file with a key-value pair per line and then call it in the docker run command with `--env-file FILE_PATH`. The path can be relative. The file content should be like this `PORT=80`.
+
+- Depending on which kind of data you're storing in your environment variables, you might not want to include the secure data directly in your Dockerfile.
+
+Instead, go for a separate environment variables file which is then only used at runtime (i.e. when you run your container with docker run).
+
+Otherwise, the values are "baked into the image" and everyone can read these values via `docker history <image>`.
+
+### ARGument variables
+
+- It allows to build multiple images with specific variable values without changing the Dockerfile each time.
+- This is declared in the Dockerfile using `ARG ARG_VARIABLE_NAME=DEFAULT_VALUE`. The default value is not mandatory.
+- It can be used inside the Dockerfile to set for example ENV variables with different values in different images.
+- It can be defined in the **docker build** command adding `--build-arg ARG_VAR_NAME=VALUE`.
+
 ## Docker commands
 
 Check this cheat sheet to get most common commands [Docker cheat sheet](https://docs.docker.com/get-started/docker_cheatsheet.pdf)
