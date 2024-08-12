@@ -1,0 +1,63 @@
+-----------------------
+Create Network
+-----------------------
+
+docker network create goals-network
+
+-----------------------
+Run MongoDB container
+-----------------------
+
+docker run --name mongodb \
+  --rm \
+  -d \
+  --network goals-net \
+  -v mongodb:/data/db \
+  -e MONGO_INITDB_ROOT_USERNAME=orlando \
+  -e MONGO_INITDB_ROOT_PASSWORD=1234 \
+  mongo
+
+-----------------------
+Build Node API Image
+-----------------------
+
+docker build -t goals-node .
+
+-----------------------
+Run Node API Container
+-----------------------
+
+docker run --name goals-backend \
+  --rm \
+  -d \
+  -p 2222:80 \
+  --network goals-net \
+  -v "/home/orlando/source/courses/docker-kubernetes-practical-guide/excercises/section-5-multi-container-app/multi-01-starting-setup/backend:/app" \
+  -v "/home/orlando/source/courses/docker-kubernetes-practical-guide/excercises/section-5-multi-container-app/multi-01-starting-setup/backend/logs:/app/logs" \
+  -v /app/node_modules \
+  -e MONGODB_USERNAME=orlando \
+  goals-node
+
+-----------------------
+Build React SPA Image
+-----------------------
+
+docker build -t goals-react .
+
+-----------------------
+Run React SPA Container
+-----------------------
+
+docker run --name goals-frontend \
+  --rm \
+  -d \
+  -it \
+  -p 3000:3000 \
+  -v "/home/orlando/source/courses/docker-kubernetes-practical-guide/excercises/section-5-multi-container-app/multi-01-starting-setup/frontend/src:/app/src" \
+  goals-react
+
+-----------------------
+Stop all Containers
+-----------------------
+
+docker stop mongodb goals-backend goals-frontend
