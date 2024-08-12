@@ -12,7 +12,7 @@ COPY . .
 ARG DEFAULT_PORT=80
 
 # This defines env variable to be used by the container/app in runtime.
-ENV PORT $DEFAULT_PORT
+ENV PORT=$DEFAULT_PORT
 
 #Here the harcoded port number is changed to use the env variable defined before.
 EXPOSE $PORT
