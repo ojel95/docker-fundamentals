@@ -136,6 +136,34 @@ Now, you can simply use the Container names to let them communicate with each ot
 fetch('cont1/my-data').then(...)
 ```
 
+### Docker Compose
+
+- You can put your Container configuration into a docker-compose.yaml file and then use just one
+command to bring up the entire environment: `docker-compose up`.
+
+- You can find the full list of configurations here: https://docs.docker.com/compose/compose-file/
+
+- **Important**: When using Docker Compose, you automatically get a Network
+for all your Containers - so you don't need to add your own Network unless you need multiple
+Networks!
+
+#### Docker compose files
+
+``` yaml
+version: "3.8" # version of the Docker Compose spec which is being used
+services: # "Services" are in the end the Containers that your app needs
+  web:
+    build: ./web # Define the path to your Dockerfile for the image of this container
+    volumes: # Define any required volumes / bind mounts
+      - logs:/app/logs
+  db:
+    build: # In case the Dockerfile has another name or other location, the image build can be more specific.
+      context: ./db
+      dockerfile: Dockerfile-web
+    volumes:
+      - data:/data/db
+```
+
 ## Docker commands
 
 Check this cheat sheet to get most common commands [Docker cheat sheet](https://docs.docker.com/get-started/docker_cheatsheet.pdf)
@@ -279,3 +307,24 @@ docker volume --help
 - `docker volume create VOL_NAME`: Create a new (Named) Volume named `VOL_NAME`. You typically don't need to do that, since Docker creates them automatically for you if they don't exist when running a container
 - `docker volume rm VOL_NAME`: Remove a Volume by its name (or ID)
 - `docker volume prune`: Remove all unused Volumes (i.e. not connected to a currently running or stopped container)
+
+## Docker compose commands
+
+- Start all containers / services mentioned in the Docker Compose file
+
+```
+docker-compose up
+```
+-d : Start in detached mode
+
+--build : Force Docker Compose to re-evaluate / rebuild all images (otherwise, it only
+does that if an image is missing)
+
+- Stop and remove all containers / services
+
+```
+docker-compose down
+```
+
+  -v : Remove all Volumes used for the Containers - otherwise they stay around, even if
+  the Containers are removed
