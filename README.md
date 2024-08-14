@@ -147,6 +147,9 @@ command to bring up the entire environment: `docker-compose up`.
 for all your Containers - so you don't need to add your own Network unless you need multiple
 Networks!
 
+- **Note**: Like in docker commands, named volumes are not automatically deleted after exit. You need to remove them
+manually.
+
 #### Docker compose files
 
 ``` yaml
@@ -163,6 +166,23 @@ services: # "Services" are in the end the Containers that your app needs
     volumes:
       - data:/data/db
 ```
+
+### Utility containers
+
+This refers to those containers created from a based image in order to start a project and install all the dependencies required to
+use the image in the future.
+
+In this case we need to do the following:
+
+  1. Create a simple Dockerfile specifying the image to use and the workdir.
+  2. You can just build and run the container giving the command you want to run at the end of the run command. e.g:
+  `docker run -it -v "/home/orlando/source/courses/docker-kubernetes-practical-guide/excercises/module-7-utility-containers:/app" node-util npm init`. In this case, it will start up a Node project creating the package.json file in the bind path.
+  3. You can protect or make more specific the image created with Dockerfile adding a **ENTRYPOINT**. This is similar to COMMAND
+  but only specify the starting part of the command. E.g `docker run -it -v "/home/orlando/source/courses/docker-kubernetes-practical-guide/excercises/module-7-utility-containers:/app" node-util:npm install`. In this example, in the image node-util:npm the ENTRYPOINT was npm, so all
+  arguments at the end of the run command will complement the npm entrypoint (`npm install` for this example).
+  4. You can define a docker-compose file in order to avoid writing the long docker commands. You define the service to run and you can start it
+  with `docker-compose up`. However, if you want to execute the extra command as explained in the previous point you have to use `docker-compose run SERVICE_NAME COMMAND_ARG`. E.g `docker-compose run --build --rm npm init` note that in the example the "npm" is not part of the entrypoint
+  command, it is the name of the service defined in the docker-compose.yaml file.
 
 ## Docker commands
 
@@ -310,21 +330,31 @@ docker volume --help
 
 ## Docker compose commands
 
-- Start all containers / services mentioned in the Docker Compose file
+Start all containers / services mentioned in the Docker Compose file
 
 ```
 docker-compose up
 ```
--d : Start in detached mode
+- -d : Start in detached mode
 
---build : Force Docker Compose to re-evaluate / rebuild all images (otherwise, it only
+- --build : Force Docker Compose to re-evaluate / rebuild all images (otherwise, it only
 does that if an image is missing)
 
-- Stop and remove all containers / services
+Stop and remove all containers / services
 
 ```
 docker-compose down
 ```
 
-  -v : Remove all Volumes used for the Containers - otherwise they stay around, even if
+- -v : Remove all Volumes used for the Containers - otherwise they stay around, even if
   the Containers are removed
+
+Run a specific service/container defined in the compose file.
+
+```
+docker-compose run SERVICE_NAME ENTRYPOINT_COMMAND_ARG
+```
+
+- --rm to the delete container when stopped. (like docker run command).
+
+- --build to force the image build again.
