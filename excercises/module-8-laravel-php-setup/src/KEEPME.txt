@@ -1,0 +1,1 @@
+Keep this src directory since composer service will create the project files here.
