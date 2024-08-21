@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service
+  labels:
+    group: example # Here the key and value are up to you. This can connect resources matching other object labels like the deployment.
+spec:
+  selector:
+    # Here is not necessary to add matchLabels key since it's the only option.
+    app: second-app # Here the key and value must match a pod label.
+  ports:
+    - protocol: 'TCP'
+      port: 2222
+      targetPort: 8080
+    # - protocol: 'TCP'
+    #   port: 2222
+    #   targetPort: 2222
+  type: LoadBalancer

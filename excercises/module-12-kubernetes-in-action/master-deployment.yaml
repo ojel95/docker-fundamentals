@@ -1,0 +1,39 @@
+# When having a service and deployment in the same file. Is a good practice to have the service first.
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service
+spec:
+  selector:
+    # Here is not necessary to add matchLabels key since it's the only option.
+    app: second-app # Here the key and value must match a pod label.
+  ports:
+    - protocol: 'TCP'
+      port: 2222
+      targetPort: 8080
+    # - protocol: 'TCP'
+    #   port: 2222
+    #   targetPort: 2222
+  type: LoadBalancer
+--- # This is required to separate objects in Yaml files.
+apiVersion: apps/v1
+kind: Deployment
+metadata: # Deployment object metadata
+  name: second-app-deployment
+spec: # This is the spec for the deployment object.
+  replicas: 1
+  selector: # This selects the pods to control
+    matchLabels: # This can be also matchExpressions
+      app: second-app # This must match the pod labels in number and values.
+      tier: backend
+  template: # Here i'm specifying a Pod object template.
+    metadata: # Pod object metadata
+      labels:
+        app: second-app # Here the key and value are up to you. You can have multiple labels
+        tier: backend
+    spec: # Pod object specification
+      containers:
+        - name: second-node-app
+          image: orjoeslo/first-k8s-app:2
+        # - name: ... # Since this is an array, you can add multiple containers to the Pod like this.
+        #   image: ...
