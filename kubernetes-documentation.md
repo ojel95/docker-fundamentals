@@ -21,6 +21,8 @@ you with that like *Kubermatic* and *AWS EKS*
 
 ## Key concepts notes
 
+Check the [official resources documentation](https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/) for more information.
+
 ### Cluster
 
 Is a network of machines which are configured to support Kubernetes.
@@ -131,6 +133,16 @@ Check the file deployment.yaml to see where it's placed.
     periodSeconds: 10
     initialDelaySeconds: 5
 ```
+
+### Volumes
+
+- k8s can mount volumes into containers
+  - Broad variety of Volume type/drivers are supported
+    - local volumes
+    - Cloud-provider specific Volumes
+  - Volume lifetime depends on the Pod lifetime
+    - Volumes survive Container restarts (and removal)
+    - Volumes are removed when Pods are destroyed
 
 ## Commands
 
