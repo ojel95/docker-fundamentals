@@ -125,7 +125,7 @@ and delays 5 seconds before start checking the first time. For more documentatio
 
 Check the file deployment.yaml to see where it's placed.
 
-```
+``` yaml
   livenessProbe:
     httpGet:
       path: /
@@ -143,6 +143,109 @@ Check the file deployment.yaml to see where it's placed.
   - Volume lifetime depends on the Pod lifetime
     - Volumes survive Container restarts (and removal)
     - Volumes are removed when Pods are destroyed
+
+#### Volumes types
+
+- **emptyDir**: It creates an empty dir in the pod that stores the data from the containers belonging to this pod
+and has the the volume mounted in it's volumeMounts. The problem of this type is that if you want replicas, you will
+have an emptyDir per pod. This means that if one pod crashes, the other available pods will have different directories
+with different data. i.e:
+
+``` yaml
+# This is part of the spec of the template in the deployment
+spec:
+  ...
+  template:
+    ...
+    volumes: # Here you create the list of volumes. But still needs to be mounted in the desired containers.
+      - name: story-volume
+        emptyDir: {}
+```
+
+- **hostPath**: A hostPath volume mounts a file or directory from the host node's filesystem into your Pod.
+This is not something that most Pods will need, but it offers a powerful escape hatch for some applications. Here the path
+is created in the Node fs so all pods in that node share the volume without losing data like empty dir.
+
+  - This can be used if you want to share existing data with the containers in the pod
+  - This solves the problems of shared data between pods but still has the problem between nodes. Pods in different nodes
+  will have different data.
+
+``` yaml
+# This is part of the spec of the template in the deployment
+volumes: # This still needs to be mounted in the desired containers.
+  - name: story-volume
+    hostPath:
+      path: /data
+      type: DirectoryOrCreate # This type indicates the path is a Dir and creates it if doesn't exists.
+```
+
+- **CSI**: Container Storage Interface (CSI) defines a standard interface for container orchestration
+systems (like Kubernetes) to expose arbitrary storage systems to their container workloads. Once a
+CSI compatible volume driver is deployed on a Kubernetes cluster, users may use the csi volume type to
+ attach or mount the volumes exposed by the CSI driver.
+
+### Persistent Volumes
+
+Different than regular volumes this volumes don't belong to the Pod. These are independent resources (entities) in the cluster,
+so they are node independent.
+
+The Node Pods creates PV (Persistent Volumes) Claims to request access to them. You can have different claims to different
+PVs.
+
+A PersistentVolume (PV) is a piece of storage in the cluster that has been provisioned by an administrator or dynamically provisioned using Storage Classes. It is a resource in the cluster just like a node is a cluster resource. PVs are volume plugins like Volumes, but have a lifecycle independent of any individual Pod that uses the PV. This API object captures the details of the implementation of the storage, be that NFS, iSCSI, or a cloud-provider-specific storage system.
+
+check host-pv.yaml and host-pvc.yaml in module 13.
+
+### Storage Classes
+
+The Kubernetes concept of a storage class is similar to “profiles” in some other storage system designs.
+
+Each StorageClass contains the fields *provisioner*, *parameters*, and *reclaimPolicy*, which are used when a PersistentVolume belonging to the class needs to be dynamically provisioned to satisfy a PersistentVolumeClaim (PVC).
+
+The name of a StorageClass object is significant, and is how users can request a particular class. Administrators set the name and other parameters of a class when first creating StorageClass objects.
+
+### ENV variables / ConfigMap
+
+As in docker it can be defined to be used by the apps.
+
+You can define them in the deployment.yaml in the container config like this:
+
+``` yaml
+spec:
+  ...
+  template:
+    ...
+    spec:
+      containers:
+        - name: story
+          image: orjoeslo/data-k8s-app:2
+          env:
+            - name: STORY_FOLDER
+              value: 'story'
+```
+
+Or even better you can define a separate file with a ConfigMap resource. There you can define multiple key-value pairs
+that can be used as env variables in multiple files. Check the **environment.yaml** file.
+
+Then to use the value of the ConfigMap, you have to change the previous env config like this in order to use the defined
+key-value pair:
+
+``` yaml
+spec:
+  ...
+  template:
+    ...
+    spec:
+      containers:
+        - name: story
+          image: orjoeslo/data-k8s-app:2
+          env:
+            - name: STORY_FOLDER
+              valueFrom:
+                configMapKeyRef:
+                  name: data-store-env # This is the name of the ConfigMap instance.
+                  key: folder # This is the key defined in the configMap file.
+```
 
 ## Commands
 
@@ -250,4 +353,24 @@ you can specify the desired object kinds separated by comma:
 kubectl delete deployments,services -l KEY=VALUE
 i.e
  kubectl delete deployments,services -l group=example
+```
+
+### Persistent Volume related commands
+
+Get the Storage Class to be used by the PV and PVC
+
+```
+kubectl get sc
+```
+
+Get the PVs
+
+```
+kubectl get pv
+```
+
+Get the PVCs
+
+```
+kubectl get pvc
 ```

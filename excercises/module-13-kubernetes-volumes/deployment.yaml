@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: story-deployment
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: story
@@ -14,10 +14,17 @@ spec:
     spec:
       containers:
         - name: story
-          image: orjoeslo/data-k8s-app:1
-          volumeMounts:
-            - mountPath: /app/story
+          image: orjoeslo/data-k8s-app:2
+          env:
+            - name: STORY_FOLDER
+              valueFrom:
+                configMapKeyRef:
+                  name: data-store-env # This is the name of the ConfigMap resource.
+                  key: folder
+          volumeMounts: # This mounts the desired volume created bellow. The name must match the volume name.
+            - mountPath: /app/story # This is the internal path of the container. Like volumes in docker.
               name: story-volume
-      volumes:
+      volumes: # Here you create the list of volumes with name and type. But still needs to be mounted in the desired containers.
         - name: story-volume
-          emptyDir: {}
+          persistentVolumeClaim:
+            claimName: host-pvc

@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: host-pv
+spec:
+  capacity: # This defines the maximum capacity of the PV. In this case is 1Gi of storage
+    storage: 1Gi
+  volumeMode: Filesystem
+  storageClassName: local-path # This name comes from the standard storageClass "kubectl get sc"
+  accessModes:
+    - ReadWriteOnce # Read write accessible from only one node. For hostPath is the only one that make sense.
+    # - ReadOnlyMany # read only accessible from many nodes
+    # - ReadWriteMany # Read-write accessible from many nodes.
+  hostPath: # This PV type is used only for this example. However it's still node dependent. The idea is that in real Cluster you use other type of PV
+    path: /data
+    type: DirectoryOrCreate
