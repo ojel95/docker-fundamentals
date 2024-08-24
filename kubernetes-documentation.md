@@ -280,7 +280,8 @@ spec
 - This is the communication between different port but not reachable from the outside world.
 - You have to define a service for the Pod you want to be exposed only inside the Cluster.
 - It's basically the same service configuration but the type is **ClusterIp**.
-- Ways to reach the Pod:
+
+#### Ways to reach Pod-Pod
 
   1. You can apply the service, get the services and use the CLUSTER-IP, since it will not change. However,
 it's very annoying and not scalable.
@@ -290,6 +291,7 @@ it's very annoying and not scalable.
   i.e  `http://${process.env.AUTH_SERVICE_SERVICE_HOST}/token/`
   3. Using the cluster internal created domain name (DNS). You can use the service name and namespace like this
   `service-name.namespace` in the configuration of your env variables. i.e:
+
   ``` yaml
   ...
   containers:

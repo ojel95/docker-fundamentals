@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: orjoeslo/k8s-demo-frontend:latest
+          env:
+            - name: TASKS_ADDRESS
+              # value: '10.43.170.29'
+              value: tasks-service.default

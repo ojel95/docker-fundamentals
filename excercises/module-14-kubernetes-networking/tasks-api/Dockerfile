@@ -10,8 +10,4 @@ COPY . .
 
 EXPOSE 8000
 
-ENV TASKS_FOLDER=tasks
-
-RUN mkdir ${TASKS_FOLDER}
-
 CMD [ "node", "tasks-app.js" ]
