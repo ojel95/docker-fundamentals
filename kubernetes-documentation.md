@@ -108,6 +108,8 @@ kubectl expose deployment first-app --type=LoadBalancer --port=8080
 - The port is the app port that needs to be exposed.
 - In the case of Rancher cluster I needed to add `--target-port=8080` in order to be available to access the node.
 
+Check module-12-kubernetes-in-action/service.yaml to see a simple example of service config file.
+
 ### Scaling
 
 It refers to have multiple replicas (instances) of the same pod/container.
@@ -246,6 +248,58 @@ spec:
                   name: data-store-env # This is the name of the ConfigMap instance.
                   key: folder # This is the key defined in the configMap file.
 ```
+
+### Networking
+
+#### Pod-internal
+
+- This is the communication between containers inside of a same pod.
+- You don't have to define a service for this.
+- The address you can use is *"localhost:port"*. This means that you can use the exposed port by the container and access
+it using the Pod localhost network. This localhost refers only to the internal pod containers.
+- Remember that default port for localhost is 80. So if the exposed port is 80 you can just use localhost.
+
+``` yaml
+spec
+  ...
+  template:
+    ...
+    spec:
+      containers:
+        - name: users
+          image: orjoeslo/k8s-demo-users:latest
+          env:
+            - name: AUTH_ADDRESS
+              value: localhost
+        - name: auth
+          image: orjoeslo/k8s-demo-auth:latest
+```
+
+#### Pod-Pod without outside world
+
+- This is the communication between different port but not reachable from the outside world.
+- You have to define a service for the Pod you want to be exposed only inside the Cluster.
+- It's basically the same service configuration but the type is **ClusterIp**.
+- Ways to reach the Pod:
+
+  1. You can apply the service, get the services and use the CLUSTER-IP, since it will not change. However,
+it's very annoying and not scalable.
+  2. To make it more flexible, K8s generates automatically ENV variables with the IP of the service:
+  The service name separated with underscore and SERVICE_HOST. `SERVICE_NAME_SERVICE_HOST`. You can use this
+  env variable in your code directly and then you don't have to care about the IP address manually.
+  i.e  `http://${process.env.AUTH_SERVICE_SERVICE_HOST}/token/`
+  3. Using the cluster internal created domain name (DNS). You can use the service name and namespace like this
+  `service-name.namespace` in the configuration of your env variables. i.e:
+  ``` yaml
+  ...
+  containers:
+  - name: users
+    image: orjoeslo/k8s-demo-users:latest
+    env:
+      - name: AUTH_ADDRESS
+        # value: '10.43.170.29'
+        value: auth-service.default
+  ```
 
 ## Commands
 

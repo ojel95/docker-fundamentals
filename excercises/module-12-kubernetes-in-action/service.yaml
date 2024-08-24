@@ -10,8 +10,8 @@ spec:
     app: second-app # Here the key and value must match a pod label.
   ports:
     - protocol: 'TCP'
-      port: 2222
-      targetPort: 8080
+      port: 2222 # Outside facing port
+      targetPort: 8080 # Internal app defined port
     # - protocol: 'TCP'
     #   port: 2222
     #   targetPort: 2222
