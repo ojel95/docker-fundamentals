@@ -430,3 +430,36 @@ Get the PVCs
 ```
 kubectl get pvc
 ```
+
+### AWS CLI
+
+#### Install
+
+``` bash
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install --bin-dir /usr/local/bin --install-dir /usr/local/aws-cli --update
+```
+
+#### Connect access key
+
+1. Go to Security Credentials in your AWS profile.
+
+2. Create access key
+
+3. Copy or download Access key ID and Secret access key.
+
+4. Configure your AWS cli in the terminal.
+
+``` bash
+aws configure
+```
+
+#### Update ~/.kube/config file with AWS cluster context
+
+```
+aws eks --region CLUSTER_REGION update-kubeconfig --name AWS_CLUSTER_NAME
+
+i.e
+aws eks --region us-west-2 update-kubeconfig --name k8s-deployment-demo
+```
