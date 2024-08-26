@@ -1,5 +1,7 @@
+const path = require('path');
+const fs = require('fs');
+
 const axios = require('axios');
-const { response } = require('express');
 const { createAndThrowError, createError } = require('../helpers/error');
 
 const User = require('../models/user');
@@ -32,7 +34,7 @@ const checkUserExistence = async (email) => {
 const getHashedPassword = async (password) => {
   try {
     const response = await axios.get(
-      `http://${process.env.AUTH_API_ADDRESSS}/hashed-pw/${password}`
+      `http://${process.env.AUTH_API_ADDRESS}/hashed-pw/${password}`
     );
     return response.data.hashed;
   } catch (err) {
@@ -45,7 +47,7 @@ const getTokenForUser = async (password, hashedPassword) => {
   console.log(password, hashedPassword);
   try {
     const response = await axios.post(
-      `http://${process.env.AUTH_API_ADDRESSS}/token`,
+      `http://${process.env.AUTH_API_ADDRESS}/token`,
       {
         password: password,
         hashedPassword: hashedPassword,
@@ -96,6 +98,16 @@ const createUser = async (req, res, next) => {
     return next(error);
   }
 
+  const logEntry = `${new Date().toISOString()} - ${savedUser.id} - ${email}\n`;
+
+  fs.appendFile(
+    path.join('/app', 'users', 'users-log.txt'),
+    logEntry,
+    (err) => {
+      console.log(err);
+    }
+  );
+
   res
     .status(201)
     .json({ message: 'User created.', user: savedUser.toObject() });
@@ -139,5 +151,17 @@ const verifyUser = async (req, res, next) => {
   }
 };
 
+const getLogs = (req, res, next) => {
+  fs.readFile(path.join('/app', 'users', 'users-log.txt'), (err, data) => {
+    if (err) {
+      createAndThrowError('Could not open logs file.', 500);
+    } else {
+      const dataArr = data.toString().split('\n');
+      res.status(200).json({ logs: dataArr });
+    }
+  });
+};
+
 exports.createUser = createUser;
 exports.verifyUser = verifyUser;
+exports.getLogs = getLogs;
