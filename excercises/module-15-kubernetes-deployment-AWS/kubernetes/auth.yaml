@@ -28,6 +28,7 @@ spec:
       containers:
         - name: auth-api
           image: orjoeslo/k8s-deployment-auth:latest
+          imagePullPolicy: Always
           env:
             - name: TOKEN_KEY
               value: 'shouldbeverysecure'

@@ -61,6 +61,7 @@ spec:
       containers:
         - name: users-api
           image: orjoeslo/k8s-deployment-users:latest
+          imagePullPolicy: Always
           env:
             - name: MONGODB_CONNECTION_URI
               value: 'mongodb+srv://orlando:0uPLsih3RLhvhbsG@cluster0.or9h8.mongodb.net/users?retryWrites=true&w=majority&appName=Cluster0'
